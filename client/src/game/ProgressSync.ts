@@ -1,5 +1,39 @@
 import type { PlayerStats } from "./PlayerController";
 
+const LOCAL_PROGRESS_KEY = "heavywater:progress:v1";
+
+export function isDesktopRuntime(): boolean {
+  return Boolean(
+    typeof window !== "undefined"
+    && window.heavyWaterDesktop?.isDesktop
+  );
+}
+
+function readLocalProgress(): ProgressSnapshot | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(LOCAL_PROGRESS_KEY);
+    if (!raw) return null;
+    const snap = JSON.parse(raw) as ProgressSnapshot;
+    if (!snap || !snap.stats) return null;
+    return snap;
+  } catch (err) {
+    console.warn("[ProgressSync] local load failed:", err);
+    return null;
+  }
+}
+
+function writeLocalProgress(snapshot: ProgressSnapshot): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    window.localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(snapshot));
+    return true;
+  } catch (err) {
+    console.warn("[ProgressSync] local save failed:", err);
+    return false;
+  }
+}
+
 /**
  * One companion's persisted shape. Enough to fully rebuild it on load
  * (preset + type) and restore the upgrade investment (level + weaponLevel).
@@ -154,21 +188,29 @@ export interface ProgressSnapshot {
 }
 
 export async function loadProgress(): Promise<ProgressSnapshot | null> {
+  if (isDesktopRuntime()) {
+    return readLocalProgress();
+  }
+
   try {
     const res = await fetch("/api/progress/load", { credentials: "include" });
-    if (!res.ok) return null;
+    if (!res.ok) return readLocalProgress();
     const data = await res.json();
-    if (!data || !data.saveData) return null;
+    if (!data || !data.saveData) return readLocalProgress();
     const snap = data.saveData as ProgressSnapshot;
-    if (!snap.stats) return null;
+    if (!snap.stats) return readLocalProgress();
     return snap;
   } catch (err) {
     console.warn("[ProgressSync] loadProgress failed:", err);
-    return null;
+    return readLocalProgress();
   }
 }
 
 export async function saveProgress(snapshot: ProgressSnapshot): Promise<boolean> {
+  if (isDesktopRuntime()) {
+    return writeLocalProgress(snapshot);
+  }
+
   try {
     const res = await fetch("/api/progress/save", {
       method: "POST",
@@ -176,7 +218,7 @@ export async function saveProgress(snapshot: ProgressSnapshot): Promise<boolean>
       credentials: "include",
       body: JSON.stringify({ saveData: snapshot }),
     });
-    if (!res.ok) return false;
+    if (!res.ok) return writeLocalProgress(snapshot);
 
     void fetch("/api/progress/stats", {
       method: "POST",
@@ -195,6 +237,6 @@ export async function saveProgress(snapshot: ProgressSnapshot): Promise<boolean>
     return true;
   } catch (err) {
     console.warn("[ProgressSync] saveProgress failed:", err);
-    return false;
+    return writeLocalProgress(snapshot);
   }
 }

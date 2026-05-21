@@ -67,7 +67,7 @@ import { AnnArborSystem } from "./AnnArborSystem";
 import { MichiganTerrainSystem } from "./MichiganTerrainSystem";
 import { setPlayerIsFlyingProvider as setEnemyPlayerIsFlyingProvider } from "./EnemySystem";
 import { RESCUE_DEFS } from "./RescueSystem";
-import { loadProgress, saveProgress, ProgressSnapshot } from "./ProgressSync";
+import { isDesktopRuntime, loadProgress, saveProgress, ProgressSnapshot } from "./ProgressSync";
 import { EventBus, GameEvents } from "./EventBus";
 import { DamageType } from "./DamageSystem";
 import { GameUI } from "./GameUI";
@@ -268,7 +268,7 @@ export const Game: React.FC = () => {
   const handleFastTravelRef = useRef<((level: number, warpPoint?: TravelWarpPoint) => void) | null>(null);
   const tryGrantLegendaryCompanionRef = useRef<(() => void) | null>(null);
 
-  const [gamePhase, setGamePhase] = useState<GamePhase>("auth");
+  const [gamePhase, setGamePhase] = useState<GamePhase>(() => isDesktopRuntime() ? "menu" : "auth");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [multiplayerConnected, setMultiplayerConnected] = useState(false);
   const [inRoom, setInRoom] = useState(false);
@@ -427,10 +427,15 @@ export const Game: React.FC = () => {
   const handlePlayOffline = useCallback(() => {
     setCurrentUser(null);
     setGamePhase("menu");
-    setSaveSummary(null); // offline play has no cloud save to surface.
-  }, []);
+    refreshSaveSummary();
+  }, [refreshSaveSummary]);
 
   useEffect(() => {
+    if (isDesktopRuntime()) {
+      refreshSaveSummary();
+      return;
+    }
+
     fetch("/api/auth/me")
       .then((res) => res.ok ? res.json() : null)
       .then((user) => {
@@ -440,7 +445,7 @@ export const Game: React.FC = () => {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [refreshSaveSummary]);
 
   const handleLootCollected = useCallback((loot: Loot) => {
     const player = playerRef.current;
@@ -1793,7 +1798,6 @@ export const Game: React.FC = () => {
         };
 
         const doSaveProgress = async (force: boolean = false): Promise<void> => {
-          if (!currentUser) return;
           const now = performance.now();
           // The 2s throttle protects against per-frame spam, but death + unlock
           // saves opt-in to bypass it so we never lose the most recent gain.
@@ -1853,11 +1857,10 @@ export const Game: React.FC = () => {
         };
 
         // Start the periodic autosave only after the initial load completes
-        // (or fails). If we started it eagerly, a 5s timer could fire *before*
+        // (or fails). If we started it eagerly, the timer could fire *before*
         // the load resolves on a slow connection and write a fresh level-1
-        // snapshot over the player's real cloud save.
+        // snapshot over the player's real cloud/local save.
         const startAutosaveTimer = () => {
-          if (!currentUser) return;
           if (autosaveTimerRef.current !== null) return; // already running
           // Autosave cadence: 30 s. The previous 5 s interval was firing a
           // full state serialization + POST every five seconds, which both
@@ -1869,8 +1872,7 @@ export const Game: React.FC = () => {
         };
 
         // Initial load + apply
-        if (currentUser) {
-          void loadProgress().then((snap) => {
+        void loadProgress().then((snap) => {
             if (!snap) return;
             try {
               player.applyLoadedSnapshot({ stats: snap.stats as any, hasFlightArmor: snap.hasFlightArmor, playerUpgrades: snap.playerUpgrades });
@@ -2061,17 +2063,11 @@ export const Game: React.FC = () => {
             console.warn("[ProgressSync] load failed:", err);
           }).finally(() => {
             // Autosave only AFTER load resolves, so the timer can never write
-            // a default snapshot on top of the real cloud save during a slow
-            // network round-trip. 5s is the new cadence (was 15s — too wide
-            // to catch resources/helper-bot upgrades earned right before death).
+            // a default snapshot on top of the real save during a slow
+            // network round-trip.
             if (autosaveTimerRef.current !== null) window.clearInterval(autosaveTimerRef.current);
             startAutosaveTimer();
           });
-        } else {
-          // No user logged in — still run autosave so an eventual login flow
-          // doesn't get stuck without one. (No-op until currentUser exists.)
-          startAutosaveTimer();
-        }
 
         bus.on(GameEvents.PLAYER_LEVEL_UP, () => {
           // Per-level damage scaling is pushed every time the player
@@ -2109,7 +2105,7 @@ export const Game: React.FC = () => {
           // before death is captured. Without `force=true` a recent autosave
           // could swallow this call and the player loses everything earned in
           // the last few seconds.
-          if (currentUser) void doSaveProgress(true);
+          void doSaveProgress(true);
           // Friendly respawn flow — preserve all stats/inventory/weapons
           showMessage("YOU FELL — RESPAWNING IN 3...", 1100);
           if (respawnTimeoutRef.current !== null) {
@@ -3008,14 +3004,17 @@ export const Game: React.FC = () => {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    if (!isDesktopRuntime()) {
+      await fetch("/api/auth/logout", { method: "POST" });
+    }
     setCurrentUser(null);
     if (multiplayerRef.current) multiplayerRef.current.dispose();
     setMultiplayerConnected(false);
     setInRoom(false);
     setRoomCode(null);
-    setGamePhase("auth");
-  }, []);
+    setGamePhase(isDesktopRuntime() ? "menu" : "auth");
+    refreshSaveSummary();
+  }, [refreshSaveSummary]);
 
   const labBlueprints = useMemo<LabBlueprint[]>(() => [
     { id: "scout", presetName: "ScoutPrime", displayName: "Scout Prime", type: "ally", description: "Fast recon ally", cost: { gears: 12, scrap: 8, cores: 1, circuits: 1 }, unlockTier: 1 },

@@ -595,6 +595,29 @@ Run production server:
 npm start
 ```
 
+## Desktop Release
+
+The desktop build packages the Vite output inside Electron and launches the game from local files. It uses offline local saves, so the executable does not need PostgreSQL just to run the campaign.
+
+```bash
+npm install
+npm run desktop
+```
+
+Create distributable builds:
+
+```bash
+npm run desktop:release
+```
+
+Platform-specific targets are also available:
+
+- `npm run desktop:release:win`
+- `npm run desktop:release:mac`
+- `npm run desktop:release:linux`
+
+Release output is written to `release/`.
+
 ## Database and Drizzle
 
 Drizzle config is in `drizzle.config.ts` and points to:
