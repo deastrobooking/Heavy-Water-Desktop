@@ -1,8 +1,10 @@
 {
   "name": "heavy-water",
   "version": "1.0.0",
+  "description": "Heavy Water desktop release build.",
   "type": "module",
   "main": "electron/main.cjs",
+  "author": "Heavy Water",
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
@@ -144,6 +146,7 @@
     "asar": true,
     "npmRebuild": false,
     "directories": {
+      "buildResources": "build",
       "output": "release"
     },
     "files": [
