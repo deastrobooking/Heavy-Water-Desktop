@@ -95,6 +95,7 @@ dev server.
 
 - Electron entry point: [`electron/main.cjs`](../electron/main.cjs)
 - Preload bridge: [`electron/preload.cjs`](../electron/preload.cjs)
+- Local launcher wrapper: [`script/run-electron.cjs`](../script/run-electron.cjs)
 - Desktop runtime detection: [`ProgressSync.ts`](../client/src/game/ProgressSync.ts)
 - Desktop scripts and builder config: [`package.json`](../package.json)
 - Static client output: `dist/public/`
