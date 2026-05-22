@@ -48,13 +48,13 @@ manual smoke testing.
   in the same commit.** That file is the agent-maintained changelog and
   is the authoritative "what major systems exist" document.
 - If you add or change an event, route, or schema column, update the
-  matching reference in [`docs/reference/`](reference/).
+  matching reference in [`Docs/reference/`](reference/).
 
 ## PR checklist
 
 - [ ] `npm run check` is green.
 - [ ] Manually smoke-tested the changed feature.
-- [ ] Added/updated the relevant `docs/` page.
+- [ ] Added/updated the relevant `Docs/` page.
 - [ ] Updated `replit.md` if you changed architecture.
 - [ ] No `console.log` left behind from debugging.
 - [ ] No untracked secrets / API keys.
@@ -68,5 +68,5 @@ is under the same license.
 
 Open an issue on the repo. Tag with `question` if it's not a bug
 report. For architectural debates, link the relevant
-[`docs/architecture.md`](architecture.md) or
+[`Docs/architecture.md`](architecture.md) or
 [`replit.md`](../replit.md) section in the issue.

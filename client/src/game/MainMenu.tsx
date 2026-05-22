@@ -29,6 +29,7 @@ export interface StartPayload {
 interface MainMenuProps {
   onStart: (payload: StartPayload) => void;
   onCustomize?: () => void;
+  multiplayerAvailable?: boolean;
   saveSummary?: SaveSummary | null;
 }
 
@@ -49,7 +50,12 @@ const formatSavedAt = (ts: number): string => {
   return `${Math.floor(ms / 86_400_000)} d ago`;
 };
 
-export const MainMenu: React.FC<MainMenuProps> = ({ onStart, onCustomize, saveSummary }) => {
+export const MainMenu: React.FC<MainMenuProps> = ({
+  onStart,
+  onCustomize,
+  multiplayerAvailable = true,
+  saveSummary,
+}) => {
   const [showGuide, setShowGuide] = useState(false);
   const [showVersus, setShowVersus] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -72,10 +78,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart, onCustomize, saveSu
     () => ([
       { id: "start", label: "START MISSION", activate: () => onStart({ mode: "campaign" }) },
       ...(onCustomize ? [{ id: "customize", label: "CUSTOMIZE", activate: onCustomize }] : []),
-      { id: "versus", label: "VERSUS", activate: () => setShowVersus(true) },
+      ...(multiplayerAvailable ? [{ id: "versus", label: "VERSUS", activate: () => setShowVersus(true) }] : []),
       { id: "guide", label: "GUIDE", activate: () => setShowGuide(true) },
     ]),
-    [onStart, onCustomize],
+    [onStart, onCustomize, multiplayerAvailable],
   );
 
   useEffect(() => {

@@ -41,8 +41,8 @@ A map of every directory you'll touch as a contributor.
 │   └── schema.ts              Drizzle tables + Zod insert schemas
 │                              (ONLY file imported by both client and server)
 │
-├── docs/                      You are here
-├── Docs/                      Older long-form developer guide
+├── electron/                  Electron desktop main/preload entry points
+├── Docs/                      Developer documentation hub
 ├── attached_assets/           User-uploaded screenshots / refs
 │
 ├── scripts/

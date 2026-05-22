@@ -2790,6 +2790,10 @@ export const Game: React.FC = () => {
   }, [handleLootCollected, showMessage, currentUser]);
 
   const handleStart = useCallback((payload: StartPayload = { mode: "campaign" }) => {
+    if (payload.mode === "versus" && isDesktopRuntime()) {
+      return;
+    }
+
     versusModeRef.current = {
       active: payload.mode === "versus",
       roomCode: payload.versus?.roomCode ?? null,
@@ -3923,6 +3927,7 @@ export const Game: React.FC = () => {
         <MainMenu
           onStart={handleStart}
           onCustomize={() => setShowCustomizer(true)}
+          multiplayerAvailable={!isDesktopRuntime()}
           saveSummary={saveSummary}
         />
       )}

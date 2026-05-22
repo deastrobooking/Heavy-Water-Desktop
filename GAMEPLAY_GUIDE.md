@@ -5,6 +5,10 @@ Insane Hybrid Organoids. This guide is your full pilot's reference: every
 control, every system, every combat tool. The same content is available
 in-game from the **GUIDE** button on the main menu.
 
+**Desktop build note:** the Electron desktop app is an offline campaign build.
+It saves locally on your machine and skips login. Multiplayer and Versus are
+available from the web/server build.
+
 ---
 
 ## 1. Movement

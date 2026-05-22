@@ -22,6 +22,7 @@ This README is a consolidated technical reference for the current codebase.
 - [Environment Variables](#environment-variables)
 - [Local Development](#local-development)
 - [Build and Production](#build-and-production)
+- [Desktop Release](#desktop-release)
 - [Database and Drizzle](#database-and-drizzle)
 - [Controls and Input](#controls-and-input)
 - [Assets](#assets)
@@ -40,7 +41,18 @@ This README is a consolidated technical reference for the current codebase.
 
 ## Quickstart (5 Minutes)
 
-For first-time contributors who want to get the project running quickly:
+For first-time desktop testers who only need the offline campaign build:
+
+```bash
+npm install
+npm run desktop
+```
+
+The desktop app skips login, uses local saves, and does not require
+PostgreSQL. See [`Docs/desktop-testing.md`](Docs/desktop-testing.md) for the
+full tester checklist.
+
+For first-time contributors who want the web/server build running locally:
 
 ### 1) Install dependencies
 
@@ -81,7 +93,7 @@ If anything fails, jump to [Troubleshooting](#troubleshooting).
 
 - React 18
 - TypeScript 5
-- Vite 5
+- Vite 6
 - Babylon.js 8 (`@babylonjs/core`, loaders, GUI, materials)
 - Tailwind CSS + shadcn/radix UI primitives (for non-core game UI)
 
@@ -597,12 +609,25 @@ npm start
 
 ## Desktop Release
 
-The desktop build packages the Vite output inside Electron and launches the game from local files. It uses offline local saves, so the executable does not need PostgreSQL just to run the campaign.
+The desktop build packages the Vite output inside Electron and launches the
+game from local files. It uses offline local saves, so the executable does not
+need PostgreSQL just to run the campaign.
 
 ```bash
 npm install
 npm run desktop
 ```
+
+Useful desktop test commands:
+
+- `npm run desktop`: build, then launch Electron.
+- `npm run desktop:preview`: launch Electron from an existing `dist/` build.
+- `npm run desktop:smoke`: build, launch Electron hidden, verify the preload
+  bridge and React root, then exit.
+
+Desktop mode supports campaign play, local saves, keyboard/mouse, and gamepad.
+Auth, cloud saves, multiplayer rooms, and Versus mode are web/server-only in
+the current offline Electron shell.
 
 Create distributable builds:
 
@@ -617,6 +642,9 @@ Platform-specific targets are also available:
 - `npm run desktop:release:linux`
 
 Release output is written to `release/`.
+
+Full tester and release-candidate checklist:
+[`Docs/desktop-testing.md`](Docs/desktop-testing.md).
 
 ## Database and Drizzle
 

@@ -10,6 +10,8 @@
     "dev": "NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",
     "desktop": "npm run build && electron .",
+    "desktop:preview": "electron .",
+    "desktop:smoke": "npm run build && electron . --smoke-test",
     "desktop:pack": "npm run build && electron-builder --dir",
     "desktop:release": "npm run build && electron-builder",
     "desktop:release:win": "npm run build && electron-builder --win",

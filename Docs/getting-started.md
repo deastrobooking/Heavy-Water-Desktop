@@ -10,6 +10,8 @@ This guide takes you from "fresh clone" to "first PR" in about 15 minutes.
 - A WebGL2-capable browser. WebGPU is used when available; the engine
   falls back to WebGL2 automatically — see
   [`BabylonEngine.ts`](../client/src/game/BabylonEngine.ts).
+- Electron desktop testing does **not** need PostgreSQL unless you are also
+  testing the web/server build.
 
 ## 2. Install dependencies
 
@@ -19,6 +21,19 @@ npm install
 
 The repo uses npm (not pnpm/yarn) so `package-lock.json` is the source of
 truth.
+
+## Desktop-only quick start
+
+If you only want to test the Electron campaign build:
+
+```bash
+npm install
+npm run desktop
+```
+
+That command builds `dist/public/` and opens Electron. Desktop mode skips web
+auth, uses local saves, and leaves multiplayer/Versus to the web/server build.
+For the full desktop checklist, see [`desktop-testing.md`](desktop-testing.md).
 
 ## 3. Configure environment variables
 

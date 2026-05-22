@@ -17,6 +17,7 @@ or **debug** the game.
 | If you want to… | Read |
 |---|---|
 | Get the project running on your machine | [`getting-started.md`](getting-started.md) |
+| Test the Electron desktop build | [`desktop-testing.md`](desktop-testing.md) |
 | Understand the high-level architecture | [`architecture.md`](architecture.md) |
 | Find the file for a specific feature | [`repository-structure.md`](repository-structure.md) |
 | Add a new feature | the matching how-to in [`how-to/`](how-to/) |

@@ -4,6 +4,8 @@ A 30,000-foot view of how Heavy Water is wired together.
 
 ## Process model
 
+Web/server mode:
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                       Browser (single page)                          │
@@ -31,6 +33,27 @@ A 30,000-foot view of how Heavy Water is wired together.
 │   └── ws WebSocketServer in noServer mode, routed at /ws             │
 │                                                                      │
 │  Dev only:    Vite middleware (server/vite.ts) + HMR at /vite-hmr    │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+Desktop mode:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Electron main process                            │
+│  electron/main.cjs                                                   │
+│   ├── registers heavy-water://game                                   │
+│   ├── serves dist/public through the protocol handler                 │
+│   └── creates a BrowserWindow with electron/preload.cjs               │
+└───────────────────────────────▲─────────────────────────────────────┘
+                                │ local static files
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Electron renderer                                │
+│  React + Babylon client                                              │
+│   ├── window.heavyWaterDesktop.isDesktop === true                    │
+│   ├── ProgressSync uses local storage                                │
+│   └── /api/* and /ws are intentionally offline                       │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -119,6 +142,9 @@ schemas. Anything you need on both sides goes here.
   serves the client and HMRs over WS.
 - **Prod**: `script/build.ts` (run via `npm run build`) builds the Vite
   client into `dist/public` and bundles the server into `dist/index.cjs`.
+- **Desktop**: `npm run desktop` builds the same Vite client and opens
+  Electron. `npm run desktop:smoke` verifies the Electron shell can load the
+  built client without keeping a window open.
 
 See [`deployment.md`](deployment.md) for the full pipeline + Replit
 deploy specifics.

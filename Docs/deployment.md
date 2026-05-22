@@ -96,6 +96,25 @@ Useful signals:
 - Use persistent environment variables for secrets
 - Verify `npm run check` before deployment
 
+## Desktop release candidates
+
+The Electron build is an offline campaign shell. It packages `dist/public/`,
+loads it through `heavy-water://game`, and saves progress locally instead of
+using the Express API.
+
+Before sending a desktop candidate to testers:
+
+```bash
+npm run check
+npm run build
+npm run desktop:smoke
+npm run desktop:pack
+```
+
+Then open the packaged app from `release/` and repeat the checklist in
+[`desktop-testing.md`](desktop-testing.md). Use the web/server deployment path
+for auth, cloud saves, leaderboards, multiplayer rooms, and Versus testing.
+
 ## Suggested third-party integrations
 
 Best overall set for this game:
@@ -108,11 +127,13 @@ Best overall set for this game:
 ## Final release checklist
 
 - `npm run check` passes
+- `npm run build` passes
 - no console errors in the browser
 - no server errors in logs
 - assets load correctly in production mode
 - controller navigation works in all menus
 - save/load still round-trips cleanly
+- for desktop candidates, `npm run desktop:smoke` passes
 
 ## Notes
 

@@ -7,6 +7,7 @@ const APP_SCHEME = "heavy-water";
 const APP_HOST = "game";
 const DIST_DIR = path.join(__dirname, "..", "dist", "public");
 const INDEX_HTML = path.join(DIST_DIR, "index.html");
+const SMOKE_TEST = process.argv.includes("--smoke-test");
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -73,6 +74,7 @@ function createWindow() {
     backgroundColor: "#000000",
     autoHideMenuBar: true,
     fullscreenable: true,
+    show: !SMOKE_TEST,
     title: "Heavy Water",
     icon: path.join(__dirname, "..", "generated-icon.png"),
     webPreferences: {
@@ -82,6 +84,41 @@ function createWindow() {
       sandbox: false,
     },
   });
+
+  if (SMOKE_TEST) {
+    const timeout = setTimeout(() => {
+      console.error("[desktop:smoke] Timed out waiting for the app to load.");
+      app.exit(1);
+    }, 15_000);
+
+    win.webContents.once("did-fail-load", (_event, code, description) => {
+      clearTimeout(timeout);
+      console.error(`[desktop:smoke] Load failed (${code}): ${description}`);
+      app.exit(1);
+    });
+
+    win.webContents.once("did-finish-load", () => {
+      setTimeout(() => {
+        win.webContents.executeJavaScript(`
+          Boolean(window.heavyWaterDesktop?.isDesktop)
+            && Boolean(document.getElementById("root")?.childElementCount)
+        `).then((ok) => {
+          clearTimeout(timeout);
+          if (!ok) {
+            console.error("[desktop:smoke] Desktop bridge or React root did not initialize.");
+            app.exit(1);
+            return;
+          }
+          console.log("[desktop:smoke] Electron shell loaded successfully.");
+          app.exit(0);
+        }).catch((err) => {
+          clearTimeout(timeout);
+          console.error("[desktop:smoke] Smoke assertion failed:", err);
+          app.exit(1);
+        });
+      }, 1_000);
+    });
+  }
 
   win.loadURL(`${APP_SCHEME}://${APP_HOST}/index.html`);
 

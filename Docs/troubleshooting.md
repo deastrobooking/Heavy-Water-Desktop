@@ -89,6 +89,33 @@ rm -rf node_modules package-lock.json
 npm install
 ```
 
+## Electron opens a blank window
+
+Run a fresh build first:
+
+```bash
+npm run build
+npm run desktop:preview
+```
+
+If it is still blank, run `npm run desktop:smoke`. A failing smoke test means
+Electron could not initialize the preload bridge, load `dist/public/index.html`,
+or mount the React root.
+
+## Electron shows the login screen
+
+Desktop mode should skip auth. Check:
+
+- `electron/preload.cjs` exists in the packaged app.
+- `window.heavyWaterDesktop.isDesktop` is true in devtools.
+- The app is being launched with Electron, not from `npm start` in a browser.
+
+## Versus or multiplayer is missing in Electron
+
+Expected. The desktop build is currently an offline campaign shell. Use
+`npm run dev` and open `http://localhost:5000` when testing `/ws`,
+multiplayer rooms, or Versus.
+
 ## Workflow restarts but the page doesn't reload
 
 Vite's auto-reconnect handles this within ~1-2 seconds. If it hangs,
